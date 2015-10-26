@@ -6,7 +6,9 @@
 package cifrado;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Arrays;
 
@@ -26,44 +28,43 @@ public class Cifrado {
      * @throws java.io.IOException
      */
     public static void main(String[] args) throws IOException {
-        // TODO code application logic here
+
 //        Scanner sc = new Scanner(System.in);
 //        System.out.println("Ingrese la ruta del archivo: ");
 //        String rutaArchivo = sc.next();
-        
+        String clave = "Hola mundo";
+        String ubicacionArchivo = "C:\\Users\\Andres\\Dropbox\\Universidad\\Criptografia\\Proyecto_Final\\TextoClaro.txt";
+        //String ubicacionArchivo = "C:\\Users\\Andres\\Documents\\NetBeansProjects\\Cifrado\\TextoCifrado.txt";
+        char cifrar = 's';
         Cifrado c = new Cifrado();
-        c.cifrar();
+        if(cifrar == 's'){
+            c.cifrar(clave, ubicacionArchivo);
+        } else {
+            c.descifrar(clave, ubicacionArchivo);
+        }
+        
     }
     
     /**
      * Método que cifra un archivo
      * 
+     * @param clave
+     * @param ubicacionArchivo
      * @throws IOException 
      */
-    public void cifrar() throws IOException{
+    public void cifrar(String clave, String ubicacionArchivo) throws IOException{
 
         //Lee el archivo
-        String clave = "Hola mundo";
-        FileReader fr = new FileReader("C:\\Users\\Andres\\Dropbox\\Universidad\\Criptografia\\Proyecto_Final\\TextoClaro.txt");
+        FileReader fr = new FileReader(ubicacionArchivo);
         BufferedReader br = new BufferedReader(fr);
         String lineaTexto;
-        char[] lineaTextoBits;
-        char[] lineaClaveBits;
+        char[] letraTextoBits;
         int[][] matrizTextoBits = new int [8][8];
         int[][] matrizClaveBits = new int [clave.length()][8];
-        int cont = 0;
+        int[][] matrizTextoCifradoBits = new int [8][8];
         //System.out.println("Length clave: "+clave.length());
         //Convierte la clave en bits
-        for (char letraClave : clave.toCharArray()){
-                
-            //cada letra se convierte en un array de bits
-            String bits = Integer.toBinaryString(letraClave);
-            lineaClaveBits = bits.toCharArray();
-            lineaClaveBits = completaFila(lineaClaveBits);
-            //System.out.println(Arrays.toString(lineaClaveBits));
-            matrizClaveBits = lineaClaveEnMatriz(lineaClaveBits, matrizClaveBits, cont);
-            cont++;
-        }
+        matrizClaveBits = claveEnBits(matrizClaveBits, clave);
         
         while ((lineaTexto = br.readLine()) != null){
             
@@ -71,26 +72,83 @@ public class Cifrado {
             char[] lineaTextoEnBytes = lineaTexto.toCharArray();
             System.out.println(Arrays.toString(lineaTextoEnBytes));
             //System.out.println("Tamaño: "+lineaTextoEnBytes.length);
-            cont = 0;
+            int cont = 0;
             for (char letraTexto : lineaTextoEnBytes){
                 
                 //cada letra se convierte en un array de bits
                 String bits = Integer.toBinaryString(letraTexto);
-                lineaTextoBits = bits.toCharArray();
-                lineaTextoBits = completaFila(lineaTextoBits);
+                letraTextoBits = bits.toCharArray();
+                letraTextoBits = completaFila(letraTextoBits);
                 //System.out.println(Arrays.toString(lineaTextoBits));
-                matrizTextoBits = lineaTextoEnMatriz(lineaTextoBits, matrizTextoBits, cont);
+                
+                matrizTextoBits = letraTextoEnMatriz(letraTextoBits, matrizTextoBits, cont);
                 cont++;
                 
-                //Cuando se completa el bloque de 64 bits
-                if (cont == 7){
-                    
+                //Cuando se completa el bloque de 64 bits se cifra
+                if (cont == 8){
+                    System.out.println("cierra bloque.");
+                    cifrarBloque(matrizTextoBits, matrizClaveBits, matrizTextoCifradoBits);
+                    matrizTextoBits = new int [8][8];
+                    cont = 0;
                 }
             }
         }
         
     }
     
+    public void descifrar(String clave, String ubicacionArchivo) throws IOException{
+        FileReader fr = new FileReader(ubicacionArchivo);
+        BufferedReader br = new BufferedReader(fr);
+        String lineaTexto;
+        char[] letraTextoBits;
+        int[][] matrizTextoBits = new int [8][8];
+        int[][] matrizClaveBits = new int [clave.length()][8];
+        int[][] matrizTextoClaroBits = new int [8][8];
+        
+        matrizClaveBits = claveEnBits(matrizClaveBits, clave);
+        
+        //Lee el archivo
+        while ((lineaTexto = br.readLine()) != null){
+            //Convierte la linea en array
+            char[] lineaTextoEnBytes = lineaTexto.toCharArray();
+            System.out.println(Arrays.toString(lineaTextoEnBytes));
+            //System.out.println("Tamaño: "+lineaTextoEnBytes.length);
+            int cont = 0;
+            for (char letraTexto : lineaTextoEnBytes){
+                String bits = Integer.toBinaryString(letraTexto);
+                letraTextoBits = bits.toCharArray();
+                letraTextoBits = completaFila(letraTextoBits);
+                matrizTextoBits = letraTextoEnMatriz(letraTextoBits, matrizTextoBits, cont);
+                cont++;
+                
+                //Cuando se completa el bloque de 64 bits se descifra
+                if (cont == 8){
+                    System.out.println("cierra bloque a descifrar.");
+                    descifrarBloque(matrizTextoBits, matrizClaveBits, matrizTextoClaroBits);
+                    matrizTextoBits = new int [8][8];
+                    cont = 0;
+                }
+            }
+        }
+    }
+    
+    public int[][] claveEnBits (int[][] matrizClaveBits, String clave){
+        
+        int cont = 0;
+        char[] letraClaveBits;
+        for (char letraClave : clave.toCharArray()){
+                
+            //cada letra se convierte en un array de bits
+            String bits = Integer.toBinaryString(letraClave);
+            letraClaveBits = bits.toCharArray();
+            letraClaveBits = completaFila(letraClaveBits);
+            //System.out.println(Arrays.toString(lineaClaveBits));
+            matrizClaveBits = letraClaveEnMatriz(letraClaveBits, matrizClaveBits, cont);
+            cont++;
+        }
+        
+        return matrizClaveBits;
+    }
     /**
      * Método que llena la linea con ceros al inicio si no tiene 8 bits
      * 
@@ -120,9 +178,9 @@ public class Cifrado {
         return lineaBits;
     }
     
-    public int[][] lineaTextoEnMatriz(char[] lineaTextoBits, int[][] matrizTextoBits, int fila){
-        for(int i = 0; i<lineaTextoBits.length; i++){
-            matrizTextoBits[fila][i] = Character.getNumericValue(lineaTextoBits[i]);
+    public int[][] letraTextoEnMatriz(char[] letraTextoBits, int[][] matrizTextoBits, int fila){
+        for(int i = 0; i<8; i++){
+            matrizTextoBits[fila][i] = Character.getNumericValue(letraTextoBits[i]);
         }
         
         System.out.println("Texto en bits: ");
@@ -135,9 +193,9 @@ public class Cifrado {
         return matrizTextoBits;
     }
     
-    public int[][] lineaClaveEnMatriz(char[] lineaClaveBits, int[][] matrizClaveBits, int fila){
-        for(int i = 0; i<lineaClaveBits.length; i++){
-            matrizClaveBits[fila][i] = Character.getNumericValue(lineaClaveBits[i]);
+    public int[][] letraClaveEnMatriz(char[] letraClaveBits, int[][] matrizClaveBits, int fila){
+        for(int i = 0; i<letraClaveBits.length; i++){
+            matrizClaveBits[fila][i] = Character.getNumericValue(letraClaveBits[i]);
         }
 //        System.out.println("Clave en bits: ");
 //        for(int i = 0; i<10; i++){
@@ -147,5 +205,80 @@ public class Cifrado {
 //            System.out.println();
 //        }
         return matrizClaveBits;
+    }
+    
+    public void cifrarBloque(int[][] matrizTextoBits, int[][] matrizClaveBits, int[][] matrizTextoCifradoBits) throws IOException{
+        //Realiza XOR con cada bit
+        for(int i=0; i<8; i++){
+            for (int j=0; j<8; j++){
+                matrizTextoCifradoBits[i][j] = matrizTextoBits[i][j] ^ matrizClaveBits[i][j];
+            }
+        }
+        
+//        System.out.println("Matriz texto claro: ");
+//        for(int i=0; i<8; i++){
+//            for (int j=0; j<8; j++){
+//                System.out.print(matrizTextoBits[i][j]+" ");
+//            }
+//            System.out.println();
+//        }
+//        
+//        System.out.println("Matriz clave: ");
+//        for(int i=0; i<8; i++){
+//            for (int j=0; j<8; j++){
+//                System.out.print(matrizClaveBits[i][j]+" ");
+//            }
+//            System.out.println();
+//        }
+//        
+//        System.out.println("Matriz texto cifrado: ");
+//        for(int i=0; i<8; i++){
+//            for (int j=0; j<8; j++){
+//                System.out.print(matrizTextoCifradoBits[i][j]+" ");
+//            }
+//            System.out.println();
+//        }
+        
+        //Escribe el texto cifrado en un archivo
+        char[] letraCifradaBits = new char[8];
+        FileWriter fw = new FileWriter("textoCifrado.txt", true);
+        try (BufferedWriter bw = new BufferedWriter(fw)) {
+            for(int i=0; i<8; i++){
+                for (int j=0; j<8; j++){
+                    letraCifradaBits[j] = Character.forDigit(matrizTextoCifradoBits[i][j], 2) ;
+                }
+                StringBuilder sb = new StringBuilder();
+                String letraCifrada = new String(letraCifradaBits);
+                sb.append((char)Integer.parseInt(letraCifrada, 2));
+                bw.write(sb.toString());
+                //System.out.print(sb.toString());
+                //System.out.println();
+            }
+        }
+    }
+    
+    public void descifrarBloque(int[][] matrizTextoBits, int[][] matrizClaveBits, int[][] matrizTextoClaroBits) throws IOException{
+        for(int i=0; i<8; i++){
+            for (int j=0; j<8; j++){
+                matrizTextoClaroBits[i][j] = matrizTextoBits[i][j] ^ matrizClaveBits[i][j];
+            }
+        }
+        
+        //Escribe el texto descifrado en un archivo
+        char[] letraCifradaBits = new char[8];
+        FileWriter fw = new FileWriter("textoDescifrado.txt", true);
+        try (BufferedWriter bw = new BufferedWriter(fw)) {
+            for(int i=0; i<8; i++){
+                for (int j=0; j<8; j++){
+                    letraCifradaBits[j] = Character.forDigit(matrizTextoClaroBits[i][j], 2) ;
+                }
+                StringBuilder sb = new StringBuilder();
+                String letraCifrada = new String(letraCifradaBits);
+                sb.append((char)Integer.parseInt(letraCifrada, 2));
+                bw.write(sb.toString());
+                //System.out.print(sb.toString());
+                //System.out.println();
+            }
+        }
     }
 }
