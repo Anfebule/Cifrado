@@ -7,6 +7,7 @@ package cifrado;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -36,6 +37,10 @@ public class Cifrado {
         String ubicacionArchivo = "C:\\Users\\Andres\\Dropbox\\Universidad\\Criptografia\\Proyecto_Final\\TextoClaro.txt";
         //String ubicacionArchivo = "C:\\Users\\Andres\\Documents\\NetBeansProjects\\Cifrado\\TextoCifrado.txt";
         char cifrar = 's';
+        File f = new File("textoCifrado.txt");
+        if(f.exists() && !f.isDirectory()) { 
+            f.delete();
+        }
         Cifrado c = new Cifrado();
         if(cifrar == 's'){
             c.cifrar(clave, ubicacionArchivo);
@@ -274,7 +279,7 @@ public class Cifrado {
                 }
                 StringBuilder sb = new StringBuilder();
                 String letraCifrada = new String(letraCifradaBits);
-                sb.append((char)Integer.parseInt(letraCifrada, 2));
+                sb.append((char)Integer.parseUnsignedInt(letraCifrada, 2));
                 bw.write(sb.toString());
                 //System.out.print(sb.toString());
                 //System.out.println();
