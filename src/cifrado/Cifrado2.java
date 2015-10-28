@@ -13,6 +13,8 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 /**
  *
@@ -21,18 +23,18 @@ import java.io.UnsupportedEncodingException;
 public class Cifrado2 {
     public static void main(String args[]) throws FileNotFoundException, IOException{
         String clave = "Hola mundo";
-        String ubicacionArchivo = "C:\\Users\\Andres\\Dropbox\\Universidad\\Criptografia\\Proyecto_Final\\TextoClaro.txt";
-        //String ubicacionArchivo = "C:\\Users\\Andres\\Documents\\NetBeansProjects\\Cifrado\\TextoCifrado.txt";
-        char cifrar = 's';
-        File f = new File("textoCifrado.txt");
-        if(f.exists() && !f.isDirectory()) { 
-            f.delete();
-        }
+        //String ubicacionArchivo = "C:\\Users\\Andres\\Dropbox\\Universidad\\Criptografia\\Proyecto_Final\\TextoClaro.txt";
+        String ubicacionArchivo = "C:\\Users\\Andres\\Documents\\NetBeansProjects\\Cifrado\\TextoCifrado.txt";
+        char cifrar = 'n';
         Cifrado2 c = new Cifrado2();
         if(cifrar == 's'){
+            File f = new File("textoCifrado.txt");
+            if(f.exists() && !f.isDirectory()) { 
+                f.delete();
+            }
             c.cifrar(clave, ubicacionArchivo);
         } else {
-            //c.descifrar(clave, ubicacionArchivo);
+            c.descifrar(clave, ubicacionArchivo);
         }
     }
     
@@ -67,6 +69,47 @@ public class Cifrado2 {
                 if (cont == 8){
                     System.out.println("cierra bloque.");
                     cifrarBloque(matrizTextoBits, matrizClaveBits);
+                    matrizTextoBits = new int [8][8];
+                    cont = 0;
+                }
+                binario.delete(0, binario.length());
+            }
+            
+        }
+    }
+    
+    public void descifrar(String clave, String ubicacionArchivo) throws FileNotFoundException, IOException{
+        FileReader fr = new FileReader(ubicacionArchivo);
+        BufferedReader br = new BufferedReader(fr);
+        String lineaTexto;
+        int cont = 0;
+        int[][] matrizTextoBits = new int [8][8];
+        int[][] matrizClaveBits = new int [clave.length()][8];
+        
+        matrizClaveBits = claveEnBits(matrizClaveBits, clave);
+        
+        while ((lineaTexto = br.readLine()) != null){
+            byte[] lineaEnBytes = lineaTexto.getBytes(StandardCharsets.UTF_8);
+            System.out.println("LineaEnBytes"+Arrays.toString(lineaEnBytes));
+            StringBuilder binario = new StringBuilder();
+            for(byte letra: lineaEnBytes){
+                int val = letra;
+                for (int i = 0; i < 8; i++)
+                {
+                   binario.append((val & 128) == 0 ? 0 : 1);
+                   val <<= 1;
+                }
+                System.out.println("binario: ");
+                System.out.println(binario.toString());
+                
+                String[] letraTextoBits = binario.toString().split("");
+                
+                letraTextoEnMatriz(letraTextoBits, matrizTextoBits, cont);
+                cont++;
+                
+                if (cont == 8){
+                    //System.out.println("cierra bloque.");
+                    descifrarBloque(matrizTextoBits, matrizClaveBits);
                     matrizTextoBits = new int [8][8];
                     cont = 0;
                 }
@@ -153,17 +196,56 @@ public class Cifrado2 {
         FileWriter fw = new FileWriter("textoCifrado.txt", true);
         try (BufferedWriter bw = new BufferedWriter(fw)) {
             for(int i=0; i<8; i++){
+                StringBuilder sb = new StringBuilder();
                 for (int j=0; j<8; j++){
-                    letraCifradaBits[j] = matrizTextoCifradoBits[i][j];
+                    //letraCifradaBits[j] = matrizTextoCifradoBits[i][j];
+                    sb.append(Integer.toString(matrizTextoCifradoBits[i][j]));
                 }
                 
-                byte[] letraCifradaByte = int2byte(letraCifradaBits);
+                System.out.println(sb.toString());
+                System.out.println("Ascii: "+Integer.parseInt(sb.toString(), 2));
+                
+                StringBuffer sbf = new StringBuffer();
+                for (int k = 0;k < sb.toString().length();k += 8) {
+                    sbf.append(Character.toString((char) Integer.parseInt(sb.toString(), 2)));
+                }
+                System.out.println(sbf);
+                
+                
+                //byte[] letraCifradaByte = int2byte(letraCifradaBits);
 //                for (int j=0; j<letraCifradaByte.length; j++){
 //                    System.out.print(letraCifradaByte[j]);
 //                }
 //                System.out.println();
-                System.out.println(new String(letraCifradaByte, "UTF-8"));
-                //bw.write(s);
+                //System.out.println(new String(letraCifradaByte, "UTF-8"));
+                bw.write(sbf.toString());
+                //System.out.print(sb.toString());
+                //System.out.println();
+            }
+        }
+    }
+    
+    public void descifrarBloque(int[][] matrizTextoBits, int[][] matrizClaveBits) throws IOException{
+        int[][] matrizTextoCifradoBits = new int[8][8];
+        for(int i=0; i<8; i++){
+            for (int j=0; j<8; j++){
+                matrizTextoCifradoBits[i][j] = matrizTextoBits[i][j] ^ matrizClaveBits[i][j];
+            }
+        }
+        
+        //Escribe el texto descifrado en un archivo
+        char[] letraCifradaBits = new char[8];
+        FileWriter fw = new FileWriter("textoDescifrado.txt", true);
+        
+        try (BufferedWriter bw = new BufferedWriter(fw)) {
+            for(int i=0; i<8; i++){
+                for (int j=0; j<8; j++){
+                    letraCifradaBits[j] = Character.forDigit(matrizTextoCifradoBits[i][j], 2) ;
+                }
+                StringBuilder sb = new StringBuilder();
+                String letraCifrada = new String(letraCifradaBits);
+                sb.append((char)Integer.parseUnsignedInt(letraCifrada, 2));
+                bw.write(sb.toString());
                 //System.out.print(sb.toString());
                 //System.out.println();
             }
