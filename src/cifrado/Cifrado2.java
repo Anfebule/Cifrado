@@ -89,8 +89,7 @@ public class Cifrado2 {
         matrizClaveBits = claveEnBits(matrizClaveBits, clave);
         
         while ((lineaTexto = br.readLine()) != null){
-            byte[] lineaEnBytes = lineaTexto.getBytes(StandardCharsets.UTF_8);
-            System.out.println("LineaEnBytes"+Arrays.toString(lineaEnBytes));
+            byte[] lineaEnBytes = lineaTexto.getBytes();
             StringBuilder binario = new StringBuilder();
             for(byte letra: lineaEnBytes){
                 int val = letra;
