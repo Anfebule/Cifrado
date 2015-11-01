@@ -5,6 +5,8 @@
  */
 package cifrado;
 
+import com.sun.xml.internal.fastinfoset.util.CharArray;
+import com.sun.xml.internal.fastinfoset.util.CharArrayString;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.io.File;
@@ -35,6 +37,7 @@ public class CifradoView extends javax.swing.JFrame {
         jComboBox1.addItem("Cifrar");
         jComboBox1.addItem("Descifrar");
         this.setTitle("Cifrado Básico");
+        jTextField1.setEditable(false);
         
     }
 
@@ -155,13 +158,14 @@ public class CifradoView extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(null, "El campo clave no puede estar vacío.");
         } else if (clave.length() <8){
             JOptionPane.showMessageDialog(null, "La clave debe contener al menos 8 caracteres.");
+        } else if (!ubicacionArchivo.contains(new CharArrayString(".txt"))){
+            JOptionPane.showMessageDialog(null, "El archivo a cifrar/descifrar debe ser un archivo de texto");
         } else {
-            //String ubicacionArchivo = "C:\\Users\\Andres\\Dropbox\\Universidad\\Criptografia\\Proyecto_Final\\TextoClaro.txt";
-            //String ubicacionArchivo = "C:\\Users\\Andres\\Documents\\NetBeansProjects\\Cifrado\\TextoCifrado.txt";
-
+            
             int cifrar = jComboBox1.getSelectedIndex();
-
             Cifrado2 c = new Cifrado2();
+            
+            // Si se elije la primera opción, cifra el archivo, si se elije la segunda, lo descifra
             if(cifrar == 0){
                 try {
                     File f = new File("textoCifrado.txt");
