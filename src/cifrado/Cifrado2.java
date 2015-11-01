@@ -17,7 +17,7 @@ import java.nio.charset.StandardCharsets;
 /**
  * Software para cifrar y descifrar un texto mediante operaciones XOR con bloques de 64 bits
  * 
- * @author Andres
+ * @author Andres Felipe Buitrago
  */
 public class Cifrado2 {
     public static void main(String args[]) throws FileNotFoundException, IOException{
