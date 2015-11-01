@@ -75,8 +75,6 @@ public class Cifrado2 {
                     binario.append((val & 128) == 0 ? 0 : 1);
                     val <<= 1;
                 }
-                //System.out.println("binario: ");
-                //System.out.println(binario.toString());
 
                 String[] letraTextoBits = binario.toString().split("");
 
@@ -138,8 +136,6 @@ public class Cifrado2 {
                    binario.append((val & 128) == 0 ? 0 : 1);
                    val <<= 1;
                 }
-                //System.out.println("binario: ");
-                //System.out.println(binario.toString());
                 
                 String[] letraTextoBits = binario.toString().split("");
                 
@@ -205,9 +201,7 @@ public class Cifrado2 {
                binario.append((val & 128) == 0 ? 0 : 1);
                val <<= 1;
             }
-            //System.out.println("binario: ");
-            //System.out.println(binario.toString());
-
+           
             String[] letraClaveBits = binario.toString().split("");
             matrizClaveBits = letraTextoEnMatriz(letraClaveBits, matrizClaveBits, cont);
             cont++;
@@ -304,7 +298,7 @@ public class Cifrado2 {
         int[][] matrizTextoCifradoBits = new int[8][8];
         for(int i=0; i<8; i++){
             
-            //Verifica que el valor ingresado sea un ascii 253 o 254 y lo transforma a los bits originales
+            //Verifica que el valor ingresado sea un ascii 253 o 254 y se transforman a los bits originales
             StringBuilder sb = new StringBuilder();
             for (int j=0; j<8; j++){
                 sb.append(Integer.toString(matrizTextoBits[i][j]));
